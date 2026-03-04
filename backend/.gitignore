@@ -1,8 +1,21 @@
-node_modules
-key.json
+# Dependencies
+node_modules/
+
+# Environment variables (NEVER commit!)
 .env
-*.tar.gz
-*.exe
-google-cloud-sdk
-npm-debug.log
-Help.md
+.env.local
+.env.production
+
+# Uploads
+uploads/
+
+# Cloud SQL Proxy
+cloud-sql-proxy
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db

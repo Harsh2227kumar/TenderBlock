@@ -12,6 +12,14 @@ dist
 dist-ssr
 *.local
 
+# Environment variables (NEVER commit!)
+.env
+.env.local
+.env.production
+
+# Flow config with private keys
+flow.json
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

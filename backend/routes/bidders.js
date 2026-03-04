@@ -1,282 +1,270 @@
 const express = require("express");
-const { format } = require("util");
 const router = express.Router();
-const path = require("path");
 const multer = require("multer");
 const jwt = require("jsonwebtoken");
-const authorization = require("../middleware/authorization");
-const mysql = require("mysql");
-const { Storage } = require("@google-cloud/storage");
-const {
-  createNewTableBidders,
-  insertBiddersData,
-  loginBidders,
-  getProfileData,
-  updateBiddersProfileImage,
-} = require("../database/queries");
-const validateEmail = require("../middleware/validateEmail");
+const fs = require("fs");
 
+const pool = require("../database/pool");
+const authorization = require("../middleware/authorization");
+const { authLimiter } = require("../middleware/rateLimiter");
 const {
-  generateUniqueId,
+  validate,
+  signupRules,
+  loginRules,
+} = require("../middleware/validator");
+const {
+  AppError,
+  ValidationError,
+  NotFoundError,
+  ConflictError,
+} = require("../utils/errors");
+const {
   generateHashpassword,
   validateHashpassword,
 } = require("../utils/utils");
-const db_config = require("../database/cloudsql");
 
 // JWT Secret
 const secretToken = process.env.JWT_SECRET;
 
-// Bidder's authentication
-// [name, email, registration, address, password]
-router.post("/signup", validateEmail, async (request, response) => {
-  const { name, email, registration, address, password } = request.body;
-  if (!name || !email || !registration || !address || !password) {
-    response.status(400).json({ message: "bad request" });
-    return;
-  }
-  // Encrypt the Password
-  const hashPassword = await generateHashpassword(password);
+// ============================================================
+// SIGNUP — POST /signup
+// ============================================================
+router.post(
+  "/signup",
+  authLimiter,
+  signupRules,
+  validate,
+  async (request, response, next) => {
+    const { name, email, registration, address, password } = request.body;
 
-  try {
-    const db = mysql.createConnection(db_config);
-    db.query(createNewTableBidders, (error, result) => {
-      if (error) {
-        response.status(500).json({ message: error });
-        return;
+    try {
+      // Encrypt the Password
+      const hashPassword = await generateHashpassword(password);
+      if (!hashPassword) {
+        throw new AppError("Failed to process password", 500);
       }
 
-      db.query(
-        insertBiddersData,
-        [name, email, registration, address, hashPassword],
-        (error, rows) => {
-          if (error) {
-            if (error.code === "ER_DUP_ENTRY") {
-              response.status(400).json({ message: "user already exists" });
-              return;
-            }
-            response.status(500).json({ message: error });
-            return;
-          }
-          response.status(200).json({ message: "registration successful" });
+      // Ensure tables exist (will be removed after migration runs)
+      await pool.execute(`CREATE TABLE IF NOT EXISTS bidders (
+        name VARCHAR(64) NOT NULL,
+        email VARCHAR(128) UNIQUE NOT NULL,
+        registration BIGINT UNIQUE NOT NULL,
+        exp INT DEFAULT 0,
+        address VARCHAR(256) NOT NULL,
+        photo VARCHAR(256),
+        password VARCHAR(72) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      )`);
 
-          db.end((error) => {
-            if (error) {
-              response.status(500).json({ message: error });
-              return;
-            }
-          });
-        }
+      await pool.execute(
+        "INSERT INTO bidders (name, email, registration, address, password) VALUES (?, ?, ?, ?, ?)",
+        [name, email, registration, address, hashPassword]
       );
-    });
-  } catch (error) {
-    response.status(500).json({ message: error });
-    return;
+
+      response.status(201).json({
+        success: true,
+        data: { message: "Registration successful" },
+      });
+    } catch (error) {
+      if (error.code === "ER_DUP_ENTRY") {
+        return next(new ConflictError("User with this email or registration already exists"));
+      }
+      next(error);
+    }
   }
-});
+);
 
-// Bidder's login [Email , Password]
-router.post("/login", validateEmail, async (request, response) => {
-  const { email, password } = request.body;
-  if (!email || !password) {
-    response.status(400).json({ message: "bad request" });
-    return;
-  }
+// ============================================================
+// LOGIN — POST /login
+// ============================================================
+router.post(
+  "/login",
+  authLimiter,
+  loginRules,
+  validate,
+  async (request, response, next) => {
+    const { email, password } = request.body;
 
-  try {
-    const db = mysql.createConnection(db_config);
+    try {
+      const [rows] = await pool.execute(
+        "SELECT name, email, registration, exp, password FROM bidders WHERE email = ?",
+        [email]
+      );
 
-    db.query(loginBidders, [email], async (error, result) => {
-      if (error) {
-        response.status(500).json({ message: error });
-        return;
+      if (rows.length === 0) {
+        throw new AppError("No bidder found with this email", 400, "USER_NOT_FOUND");
       }
 
-      if (result.length === 0) {
-        response
-          .status(400)
-          .json({ message: "no bidder found with this email" });
-        return;
-      }
+      const user = rows[0];
 
       // Validate User password
       const isPasswordValid = await validateHashpassword(
         password,
-        result[0].password.toString(),
-        password
+        user.password.toString()
       );
 
-      // If not valid
       if (!isPasswordValid) {
-        response.status(400).json({ message: "invalid credentials" });
-        return;
+        throw new AppError("Invalid credentials", 400, "INVALID_CREDENTIALS");
       }
 
-      // Generate JWT Token
-      const username = result[0].name;
-      const registration = result[0].registration;
-      const experience = result[0].exp;
-      
-
-      // JWT Token Expiry = 24 Hours
+      // Generate JWT Token (24 hour expiry)
       const token = jwt.sign(
-        {username, registration, experience, email, exp : Math.floor(Date.now() / 1000) + (60 * 60 * 24)}, 
+        {
+          username: user.name,
+          registration: user.registration,
+          experience: user.exp,
+          email: user.email,
+          exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24,
+        },
         secretToken
       );
 
       response.cookie("authorization", `bearer ${token}`, {
-        secure: true,
+        secure: process.env.NODE_ENV === "production",
         httpOnly: true,
         maxAge: 24 * 60 * 60 * 1000, // 24 Hours
+        sameSite: "lax",
       });
 
-      response.json({
-        message: "logged in successfully",
-        data: { username, email, registration },
+      response.status(200).json({
+        success: true,
+        data: {
+          message: "Logged in successfully",
+          user: {
+            username: user.name,
+            email: user.email,
+            registration: user.registration,
+            experience: user.exp,
+          },
+        },
       });
-
-      db.end((error) => {
-        if (error) {
-          response.status(500).json({ message: error });
-          return;
-        }
-      });
-    });
-  } catch (error) {
-    response.status(500).json({ message: error });
-    return;
-  }
-});
-
-// Initialize Cloud Storage
-const storage = new Storage({
-  projectId: process.env.GCP_PROJECT_ID,
-});
-
-const bucketName = process.env.BUCKET_NAME;
-const bucket = storage.bucket(bucketName);
-// Process file
-let processFile = multer({
-  storage: multer.memoryStorage(),
-});
-
-// Bidder's Image upload to Google Cloud Storage
-router.post(
-  "/upload/image",
-  processFile.single("file"),
-  authorization,
-  (request, response) => {
-    // If there is no image file
-    if (!request.file) {
-      response.status(400).json({ message: "no image found" });
-      return;
+    } catch (error) {
+      next(error);
     }
-
-    // Get user payload
-    const payload = request.bidder;
-    if (!payload.email) {
-      response.status(500).json({ message: "try again" });
-      return;
-    }
-
-    // Check the file extension // Only JPEG, JPG, PNG are allowed
-    const fileExt = request.file.originalname.split(".")[1];
-    if (fileExt !== "jpeg" && fileExt !== "png" && fileExt !== "jpg") {
-      response
-        .status(415)
-        .json({ message: "only jpeg, jpg, png files are allowed" });
-      return;
-    }
-
-    // Check file size // Maximum limit 2MB
-    const imageSize = request.file.size / 1024 / 1024;
-    if (imageSize > 2) {
-      response.status(401).json({ message: "Maximum 2MB images are allowed" });
-      return;
-    }
-
-    // Create a new blob
-    const blob = bucket.file(request.file.originalname);
-    const blobStream = blob.createWriteStream({ resumable: false });
-
-    blobStream.on("error", (err) => {
-      response.status(500).json({ message: err.message });
-      return;
-    });
-
-    blobStream.on("finish", async () => {
-      const id = generateUniqueId(10);
-      const newFileName = `${id}.${fileExt}`;
-
-      try {
-        const publicURL = format(
-          `https://storage.googleapis.com/${bucket.name}/${newFileName}`
-        );
-
-        // Rename the file with unique string
-        await bucket.file(request.file.originalname).rename(newFileName);
-
-        // Make the file public
-        await bucket.file(newFileName).makePublic();
-
-        const db = mysql.createConnection(db_config);
-        db.query(
-          updateBiddersProfileImage,
-          [publicURL, payload.email],
-          (error, rows) => {
-            if (error) {
-              response.status(400).json({ message: error });
-              return;
-            }
-
-            // Return the URL for public access
-            response.json({
-              message: "Image uploaded successsfully",
-              url: publicURL,
-            });
-
-            db.end((error) => {
-              if (error) {
-                response.status(500).json({ message: error });
-                return;
-              }
-            });
-          }
-        );
-      } catch (error) {
-        response.status(500).json({ message: error });
-      }
-    });
-    blobStream.end(request.file.buffer);
   }
 );
 
-// Get Bidders data // Profile Data
-router.get("/user", authorization, (request, response) => {
-  const userPayload = request.bidder;
-  if (!userPayload.email) {
-    response.status(400).json({ message: "unable to fetch data" });
-    return;
-  }
-  const db = mysql.createConnection(db_config);
-  db.query(getProfileData, [userPayload.email], async (error, result) => {
-    if (error) {
-      response.status(500).json({ message: error });
-      return;
-    }
+// ============================================================
+// LOGOUT — POST /logout
+// ============================================================
+router.post("/logout", (request, response) => {
+  response.clearCookie("authorization", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+  });
 
-    response.status(200).json({ message: result });
-
-    db.end((error) => {
-      if (error) {
-        response.status(500).json({ message: error });
-        return;
-      }
-    });
+  response.status(200).json({
+    success: true,
+    data: { message: "Logged out successfully" },
   });
 });
 
+// ============================================================
+// FILE UPLOAD — POST /upload/image
+// ============================================================
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/");
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    const fileExt = file.originalname.split(".").pop();
+    cb(null, file.fieldname + "-" + uniqueSuffix + "." + fileExt);
+  },
+});
+
+const fileFilter = (req, file, cb) => {
+  const allowedMimes = ["image/jpeg", "image/jpg", "image/png"];
+  if (allowedMimes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new ValidationError("Only JPEG, JPG, PNG files are allowed"), false);
+  }
+};
+
+const processFile = multer({
+  storage: storage,
+  fileFilter: fileFilter,
+  limits: { fileSize: 2 * 1024 * 1024 }, // 2MB max
+});
+
+router.post(
+  "/upload/image",
+  authorization,
+  processFile.single("file"),
+  async (request, response, next) => {
+    if (!request.file) {
+      return next(new ValidationError("No image file provided"));
+    }
+
+    const payload = request.bidder;
+    if (!payload || !payload.email) {
+      if (request.file) fs.unlinkSync(request.file.path);
+      return next(new AppError("Authentication required", 401));
+    }
+
+    try {
+      const publicURL = `${request.protocol}://${request.get("host")}/uploads/${request.file.filename}`;
+
+      await pool.execute(
+        "UPDATE bidders SET photo = ? WHERE email = ?",
+        [publicURL, payload.email]
+      );
+
+      response.status(200).json({
+        success: true,
+        data: {
+          message: "Image uploaded successfully",
+          url: publicURL,
+        },
+      });
+    } catch (error) {
+      if (request.file && request.file.path) {
+        fs.unlinkSync(request.file.path);
+      }
+      next(error);
+    }
+  }
+);
+
+// ============================================================
+// GET PROFILE — GET /user
+// ============================================================
+router.get("/user", authorization, async (request, response, next) => {
+  const userPayload = request.bidder;
+  if (!userPayload || !userPayload.email) {
+    return next(new AppError("Unable to fetch data", 400));
+  }
+
+  try {
+    const [rows] = await pool.execute(
+      "SELECT name, email, registration, exp, address, photo FROM bidders WHERE email = ?",
+      [userPayload.email]
+    );
+
+    if (rows.length === 0) {
+      return next(new NotFoundError("User"));
+    }
+
+    response.status(200).json({
+      success: true,
+      data: rows[0],
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ============================================================
+// GET JWT DATA — GET /data
+// ============================================================
 router.get("/data", authorization, (request, response) => {
-  response.send(request.bidder);
+  response.status(200).json({
+    success: true,
+    data: request.bidder,
+  });
 });
 
 module.exports = router;

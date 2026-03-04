@@ -1,0 +1,220 @@
+# Phase 2 & 3: Real Blockchain Integration + Auth Overhaul
+
+## Problem
+
+TenderFloww has smart contracts deployed on Flow testnet but they're **never called** from the app. All operations (tender creation, bidding, settlement) go directly to MySQL. The blockchain is decorative.
+
+## Goal
+
+Make every critical operation execute **on-chain first**, then index in MySQL for fast reads. After these phases:
+- **Bids** → placed via FCL smart contract → indexed in MySQL  
+- **Settlements** → executed on-chain (NFT transferred to winner) → indexed in MySQL  
+- **Tender creation** → NFT minted + auction created on-chain → indexed in MySQL  
+- **Auth** → wallet-first, JWT becomes secondary/deprecated
+
+---
+
+## Proposed Changes
+
+### Phase 2: Blockchain Integration
+
+---
+
+#### [NEW] [placeBid.js](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/Transactions/placeBid.js)
+
+New FCL transaction that calls `BiddingCollection.placeBid()` on the admin's collection. Takes `biddingId` (on-chain auction ID), `bidAmount`, and the **admin account address** (`0xea0627a8b29d7901`).
+
+The Cadence transaction will:
+1. Borrow the bidder's `FungibleToken.Receiver` capability
+2. Borrow the bidder's `Tender.CollectionPublic` capability
+3. Borrow the admin's `BiddingCollection` (public)
+4. Call `collection.placeBid(id, bidTokens, collectionCap, vaultCap)`
+
+---
+
+#### [NEW] [settleBidding.js](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/Transactions/settleBidding.js)
+
+New FCL transaction that calls `BiddingCollection.settleBidding()` on the admin's collection. Only the admin (collection owner) can call this.
+
+The Cadence transaction will:
+1. Borrow the admin's `BiddingCollection` from `/storage/BiddingCollection`
+2. Call `collection.settleBidding(id)` — which triggers NFT transfer to winner and token settlement
+
+---
+
+#### [MODIFY] [getProjectStatuses.js](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/Scripts/getProjectStatuses.js)
+
+**Current bugs:**
+- Wrong contract address: `0x01` → should be `0xea0627a8b29d7901`
+- Top-level `await` → breaks when imported as a module
+- Missing argument in [args](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/Scripts/getProjectStatuses.js#16-17) ([arg()](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/Scripts/getProjectStatuses.js#16-17) with no value)
+
+Will refactor into a proper exported async function.
+
+---
+
+#### [NEW] [flowService.js](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/services/flowService.js)
+
+Centralized service for all blockchain interactions:
+- [createTender()](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/components/modal/Modal.jsx#44-84) — calls [CreateTenderInFlow](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/Transactions/startProject.js#3-70), waits for seal, returns tx hash
+- [placeBid()](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/services/bidService.js#7-15) — calls new `placeBid.js`, waits for seal, returns tx hash
+- `settleBidding()` — calls new `settleBidding.js`, waits for seal, returns tx hash
+- `getProjectStatuses()` — calls fixed [getProjectStatuses.js](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/Scripts/getProjectStatuses.js) script
+- `getProjectStatus()` — gets single project status by ID
+
+---
+
+#### [MODIFY] [Modal.jsx](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/components/modal/Modal.jsx)
+
+**Current**: Calls `tenderService.create()` → goes to MySQL only  
+**After**: Calls `flowService.createTender()` → on-chain NFT mint + auction → THEN `tenderService.create()` → MySQL index
+
+Flow:
+1. User fills form, uploads to IPFS
+2. `flowService.createTender(...)` → blockchain transaction → waits for seal
+3. On success → `tenderService.create(...)` → MySQL index with tx hash
+4. Shows tx hash + Flow explorer link in UI
+
+---
+
+#### [MODIFY] [Bids.jsx](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/containers/bids/Bids.jsx)
+
+**Current**: Calls `bidService.placeBid()` → goes to MySQL only  
+**After**: Calls `flowService.placeBid()` → on-chain bid → THEN `bidService.placeBid()` → MySQL index
+
+Flow:
+1. User enters bid amount, clicks "Place Bid"
+2. Require wallet connected (`user.loggedIn` check)
+3. `flowService.placeBid(biddingId, amount)` → blockchain → waits for seal
+4. On success → `bidService.placeBid(tender_id, amount)` → MySQL index
+5. Shows tx hash in UI
+
+Also adds: query on-chain auction status via `flowService.getProjectStatuses()` to display real-time blockchain data.
+
+---
+
+#### [MODIFY] [Tender.jsx](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/components/tender/Tender.jsx)
+
+**Current**: Calls `tenderService.settle()` → MySQL update only  
+**After**: Calls `flowService.settleBidding()` → on-chain settlement (NFT transfer + tokens) → THEN `tenderService.settle()` → MySQL index
+
+---
+
+#### [MODIFY] [tender.js (backend route)](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/backend/routes/tender.js)
+
+Add a new `POST /tender/index` endpoint that:
+- Accepts tender data + tx hash from frontend  
+- Stores in MySQL as an index/cache  
+- Returns success
+
+The existing `POST /tender/create`, `POST /placebid`, and `POST /settle` endpoints remain but are now **secondary** — the frontend calls blockchain FIRST, then these endpoints for indexing.
+
+---
+
+#### [MODIFY] [FlowProvider.jsx](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/context/FlowProvider.jsx)
+
+Enhance to expose:
+- `transactionStatus` — pending/sealed/error
+- `lastTxHash` — last transaction ID for explorer links
+- Fix potential error when `txId` is undefined (currently crashes)
+
+---
+
+### Phase 3: Authentication Overhaul
+
+---
+
+#### [NEW] [AuthProvider.jsx](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/context/AuthProvider.jsx)
+
+New context that wraps FlowProvider:
+- Tracks: `walletAddress`, `isWalletConnected`, `isAdmin`, `authMethod` (wallet/jwt/none)
+- Checks admin status: compares wallet address to known admin address (`0xea0627a8b29d7901`)
+- Provides `connectWallet()`, `disconnectWallet()`, `isAuthenticated()`
+
+---
+
+#### [MODIFY] [App.jsx](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/App.jsx)
+
+Wrap routes with `AuthProvider`
+
+---
+
+#### [MODIFY] [Bids.jsx](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/containers/bids/Bids.jsx)
+
+- Require wallet connection to place bids (show "Connect Wallet" if not connected)
+- Display wallet address as bidder identity
+
+---
+
+#### [MODIFY] [Login.jsx](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/containers/login/Login.jsx)
+
+Add deprecation banner: "We recommend using wallet-based login for full blockchain features." Add "Connect Wallet" button alongside existing login form.
+
+---
+
+#### [MODIFY] [Signup.jsx](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/containers/signup/Signup.jsx)
+
+Add deprecation banner: "We recommend using wallet-based signup for full blockchain features." Add "Connect Wallet" button alongside existing signup form.
+
+---
+
+## User Review Required
+
+> [!IMPORTANT]
+> **Smart Contract Limitation**: The existing smart contracts ([BiddingPlatform.cdc](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/contracts/BiddingPlatform.cdc), [Tender.cdc](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/contracts/Tender.cdc)) are already deployed on testnet at `0xea0627a8b29d7901` and `0xc9a10bbda7c73177`. Phase 2 will work **within the existing contract interfaces** — no contract redeployment needed. The [placeBid()](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/services/bidService.js#7-15) function in [BiddingPlatform.cdc](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/contracts/BiddingPlatform.cdc) expects `bidTokens` as a `UFix64` value parameter (not actual vault tokens), and `settleBidding()` expects a `cutVault` capability. We'll create transactions that match these exact interfaces.
+
+> [!WARNING]
+> **Testing on Flow Testnet**: After implementation, you'll need a running Flow testnet account with the contracts deployed to do a full end-to-end test. If the contracts at `0xea0627a8b29d7901` and `0xc9a10bbda7c73177` are no longer active, they'd need to be redeployed. Please confirm these accounts are still active.
+
+> [!NOTE]
+> **MySQL Stays**: MySQL is NOT being removed — it becomes a read cache. The frontend will call blockchain FIRST, then index the result in MySQL. This gives you both blockchain immutability AND fast read performance.
+
+---
+
+## Verification Plan
+
+### Automated Verification (Compilation Checks)
+
+1. **Backend module loading test:**
+```bash
+cd f:\Collage\Sem4\PBL\project1\TenderFloww\backend
+node -e "try { require('./server.js'); console.log('Backend OK'); } catch(e) { console.error('FAIL:', e.message); process.exit(1); }"
+```
+
+2. **Frontend build test:**
+```bash
+cd f:\Collage\Sem4\PBL\project1\TenderFloww\client
+npx vite build 2>&1
+```
+This confirms all imports resolve and JSX compiles.
+
+### Manual Verification (User Testing)
+
+Since blockchain transactions require a real wallet and testnet connection, full end-to-end testing must be done manually:
+
+1. **Start the app:**
+   - Terminal 1: `cd backend && npm run dev`
+   - Terminal 2: `cd client && npm run dev`
+
+2. **Test wallet connection:**
+   - Open `http://localhost:5173/bids?tender_id=any`
+   - Click "Login" (wallet) → Blocto popup should appear
+   - After connecting, wallet address should display
+
+3. **Test tender creation (admin only):**
+   - Go to `/admin`, click "Create Tender"
+   - Fill form, click Submit
+   - Verify: Blocto transaction popup appears FIRST
+   - After blockchain confirms → MySQL insert happens
+   - Verify: TX hash displayed in UI
+
+4. **Test bid placement:**
+   - Go to `/bids?tender_id=<valid_id>`
+   - Connect wallet, enter bid amount, click Place Bid
+   - Verify: Blocto transaction popup appears
+   - After blockchain confirms → MySQL insert happens
+
+5. **Test settlement:**
+   - On admin panel, click "Settle Bid" on an expired tender
+   - Verify: Blocto transaction popup appears
+   - NFT should transfer to winner on-chain

@@ -9,6 +9,7 @@ module.exports = (request, response, next) => {
     }
 
     if (!emailValidator.validate(email)) {
+      console.log("Invalid email received:", email);
       response.status(400).json({ error: "please provide valid email" });
       return;
     }

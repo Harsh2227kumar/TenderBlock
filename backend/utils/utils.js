@@ -1,31 +1,23 @@
 const bcrypt = require("bcryptjs");
+const crypto = require("crypto");
 
-// Generate UNIQUE ID // 
-const generateUniqueId = (length = 5) => {
-  return (
-    Date.now() +
-    Math.random()
-      .toString(36)
-      .substring(2, length + 2)
-  );
+// Generate UNIQUE ID (cryptographically secure)
+const generateUniqueId = (length = 10) => {
+  return crypto.randomBytes(length).toString("hex");
 };
 
-// Generate UNIQUE Tender ID // 
-const generateUniqueTenderId = (length = 5) => {
-  return (
-    Math.random()
-      .toString(36)
-      .substring(2, length + 2)
-  );
+// Generate UNIQUE Tender ID (cryptographically secure)
+const generateUniqueTenderId = (length = 10) => {
+  return "TF-" + crypto.randomBytes(length).toString("hex").toUpperCase().slice(0, length);
 };
 
 // Encrypt Password using bcrypt package
 const generateHashpassword = async (originalPassword) => {
   try {
-    const hashPassword = await bcrypt.hash(originalPassword, 10);
+    const hashPassword = await bcrypt.hash(originalPassword, 12); // Increased from 10 to 12 rounds
     return hashPassword;
   } catch (err) {
-    console.error(err);
+    console.error("Password hashing failed:", err);
     return "";
   }
 };
@@ -36,7 +28,7 @@ const validateHashpassword = async (originalPassword, hashPassword) => {
     const isValid = await bcrypt.compare(originalPassword, hashPassword);
     return isValid;
   } catch (err) {
-    console.error(err);
+    console.error("Password validation failed:", err);
     return false;
   }
 };

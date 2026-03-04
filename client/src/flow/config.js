@@ -1,6 +1,12 @@
 import { config } from "@onflow/fcl";
 
+// Flow blockchain configuration
+// Uses environment variables with testnet defaults
 config({
-  "accessNode.api": "https://rest-testnet.onflow.org", // Mainnet: "https://rest-mainnet.onflow.org"
-  "discovery.wallet": "https://fcl-discovery.onflow.org/testnet/authn", // Mainnet: "https://fcl-discovery.onflow.org/authn"
+  "accessNode.api":
+    import.meta.env.VITE_FLOW_ACCESS_NODE ||
+    "https://rest-testnet.onflow.org",
+  "discovery.wallet":
+    import.meta.env.VITE_FLOW_DISCOVERY_WALLET ||
+    "https://fcl-discovery.onflow.org/testnet/authn",
 });

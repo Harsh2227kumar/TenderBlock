@@ -1,9 +1,4 @@
-## <div div align="center">Hack For Bengal Season 2 - TenderFlow </div>
 
-<div align="center">
-  <a href="https://github.com/bishakhne0gi/TenderFloww">
-    <img src="https://github.com/bishakhne0gi/TenderFloww/assets/50258639/d6f8c2b3-9a96-4395-9712-8543771c53b9" alt="Logo" width="120" height="120">
-  </a>
 
 ## Decentralized auction for getting tenders
 
