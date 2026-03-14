@@ -2,7 +2,7 @@
 
 ## Problem
 
-TenderFloww has smart contracts deployed on Flow testnet but they're **never called** from the app. All operations (tender creation, bidding, settlement) go directly to MySQL. The blockchain is decorative.
+TenderBlock has smart contracts deployed on Flow testnet but they're **never called** from the app. All operations (tender creation, bidding, settlement) go directly to MySQL. The blockchain is decorative.
 
 ## Goal
 
@@ -20,7 +20,7 @@ Make every critical operation execute **on-chain first**, then index in MySQL fo
 
 ---
 
-#### [NEW] [placeBid.js](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/Transactions/placeBid.js)
+#### [NEW] [placeBid.js](file:///f:/Collage/Sem4/PBL/project1/TenderBlock/client/src/Transactions/placeBid.js)
 
 New FCL transaction that calls `BiddingCollection.placeBid()` on the admin's collection. Takes `biddingId` (on-chain auction ID), `bidAmount`, and the **admin account address** (`0xea0627a8b29d7901`).
 
@@ -32,7 +32,7 @@ The Cadence transaction will:
 
 ---
 
-#### [NEW] [settleBidding.js](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/Transactions/settleBidding.js)
+#### [NEW] [settleBidding.js](file:///f:/Collage/Sem4/PBL/project1/TenderBlock/client/src/Transactions/settleBidding.js)
 
 New FCL transaction that calls `BiddingCollection.settleBidding()` on the admin's collection. Only the admin (collection owner) can call this.
 
@@ -42,29 +42,29 @@ The Cadence transaction will:
 
 ---
 
-#### [MODIFY] [getProjectStatuses.js](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/Scripts/getProjectStatuses.js)
+#### [MODIFY] [getProjectStatuses.js](file:///f:/Collage/Sem4/PBL/project1/TenderBlock/client/src/Scripts/getProjectStatuses.js)
 
 **Current bugs:**
 - Wrong contract address: `0x01` → should be `0xea0627a8b29d7901`
 - Top-level `await` → breaks when imported as a module
-- Missing argument in [args](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/Scripts/getProjectStatuses.js#16-17) ([arg()](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/Scripts/getProjectStatuses.js#16-17) with no value)
+- Missing argument in [args](file:///f:/Collage/Sem4/PBL/project1/TenderBlock/client/src/Scripts/getProjectStatuses.js#16-17) ([arg()](file:///f:/Collage/Sem4/PBL/project1/TenderBlock/client/src/Scripts/getProjectStatuses.js#16-17) with no value)
 
 Will refactor into a proper exported async function.
 
 ---
 
-#### [NEW] [flowService.js](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/services/flowService.js)
+#### [NEW] [flowService.js](file:///f:/Collage/Sem4/PBL/project1/TenderBlock/client/src/services/flowService.js)
 
 Centralized service for all blockchain interactions:
-- [createTender()](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/components/modal/Modal.jsx#44-84) — calls [CreateTenderInFlow](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/Transactions/startProject.js#3-70), waits for seal, returns tx hash
-- [placeBid()](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/services/bidService.js#7-15) — calls new `placeBid.js`, waits for seal, returns tx hash
+- [createTender()](file:///f:/Collage/Sem4/PBL/project1/TenderBlock/client/src/components/modal/Modal.jsx#44-84) — calls [CreateTenderInFlow](file:///f:/Collage/Sem4/PBL/project1/TenderBlock/client/src/Transactions/startProject.js#3-70), waits for seal, returns tx hash
+- [placeBid()](file:///f:/Collage/Sem4/PBL/project1/TenderBlock/client/src/services/bidService.js#7-15) — calls new `placeBid.js`, waits for seal, returns tx hash
 - `settleBidding()` — calls new `settleBidding.js`, waits for seal, returns tx hash
-- `getProjectStatuses()` — calls fixed [getProjectStatuses.js](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/Scripts/getProjectStatuses.js) script
+- `getProjectStatuses()` — calls fixed [getProjectStatuses.js](file:///f:/Collage/Sem4/PBL/project1/TenderBlock/client/src/Scripts/getProjectStatuses.js) script
 - `getProjectStatus()` — gets single project status by ID
 
 ---
 
-#### [MODIFY] [Modal.jsx](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/components/modal/Modal.jsx)
+#### [MODIFY] [Modal.jsx](file:///f:/Collage/Sem4/PBL/project1/TenderBlock/client/src/components/modal/Modal.jsx)
 
 **Current**: Calls `tenderService.create()` → goes to MySQL only  
 **After**: Calls `flowService.createTender()` → on-chain NFT mint + auction → THEN `tenderService.create()` → MySQL index
@@ -77,7 +77,7 @@ Flow:
 
 ---
 
-#### [MODIFY] [Bids.jsx](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/containers/bids/Bids.jsx)
+#### [MODIFY] [Bids.jsx](file:///f:/Collage/Sem4/PBL/project1/TenderBlock/client/src/containers/bids/Bids.jsx)
 
 **Current**: Calls `bidService.placeBid()` → goes to MySQL only  
 **After**: Calls `flowService.placeBid()` → on-chain bid → THEN `bidService.placeBid()` → MySQL index
@@ -93,14 +93,14 @@ Also adds: query on-chain auction status via `flowService.getProjectStatuses()` 
 
 ---
 
-#### [MODIFY] [Tender.jsx](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/components/tender/Tender.jsx)
+#### [MODIFY] [Tender.jsx](file:///f:/Collage/Sem4/PBL/project1/TenderBlock/client/src/components/tender/Tender.jsx)
 
 **Current**: Calls `tenderService.settle()` → MySQL update only  
 **After**: Calls `flowService.settleBidding()` → on-chain settlement (NFT transfer + tokens) → THEN `tenderService.settle()` → MySQL index
 
 ---
 
-#### [MODIFY] [tender.js (backend route)](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/backend/routes/tender.js)
+#### [MODIFY] [tender.js (backend route)](file:///f:/Collage/Sem4/PBL/project1/TenderBlock/backend/routes/tender.js)
 
 Add a new `POST /tender/index` endpoint that:
 - Accepts tender data + tx hash from frontend  
@@ -111,7 +111,7 @@ The existing `POST /tender/create`, `POST /placebid`, and `POST /settle` endpoin
 
 ---
 
-#### [MODIFY] [FlowProvider.jsx](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/context/FlowProvider.jsx)
+#### [MODIFY] [FlowProvider.jsx](file:///f:/Collage/Sem4/PBL/project1/TenderBlock/client/src/context/FlowProvider.jsx)
 
 Enhance to expose:
 - `transactionStatus` — pending/sealed/error
@@ -124,7 +124,7 @@ Enhance to expose:
 
 ---
 
-#### [NEW] [AuthProvider.jsx](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/context/AuthProvider.jsx)
+#### [NEW] [AuthProvider.jsx](file:///f:/Collage/Sem4/PBL/project1/TenderBlock/client/src/context/AuthProvider.jsx)
 
 New context that wraps FlowProvider:
 - Tracks: `walletAddress`, `isWalletConnected`, `isAdmin`, `authMethod` (wallet/jwt/none)
@@ -133,26 +133,26 @@ New context that wraps FlowProvider:
 
 ---
 
-#### [MODIFY] [App.jsx](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/App.jsx)
+#### [MODIFY] [App.jsx](file:///f:/Collage/Sem4/PBL/project1/TenderBlock/client/src/App.jsx)
 
 Wrap routes with `AuthProvider`
 
 ---
 
-#### [MODIFY] [Bids.jsx](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/containers/bids/Bids.jsx)
+#### [MODIFY] [Bids.jsx](file:///f:/Collage/Sem4/PBL/project1/TenderBlock/client/src/containers/bids/Bids.jsx)
 
 - Require wallet connection to place bids (show "Connect Wallet" if not connected)
 - Display wallet address as bidder identity
 
 ---
 
-#### [MODIFY] [Login.jsx](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/containers/login/Login.jsx)
+#### [MODIFY] [Login.jsx](file:///f:/Collage/Sem4/PBL/project1/TenderBlock/client/src/containers/login/Login.jsx)
 
 Add deprecation banner: "We recommend using wallet-based login for full blockchain features." Add "Connect Wallet" button alongside existing login form.
 
 ---
 
-#### [MODIFY] [Signup.jsx](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/containers/signup/Signup.jsx)
+#### [MODIFY] [Signup.jsx](file:///f:/Collage/Sem4/PBL/project1/TenderBlock/client/src/containers/signup/Signup.jsx)
 
 Add deprecation banner: "We recommend using wallet-based signup for full blockchain features." Add "Connect Wallet" button alongside existing signup form.
 
@@ -161,7 +161,7 @@ Add deprecation banner: "We recommend using wallet-based signup for full blockch
 ## User Review Required
 
 > [!IMPORTANT]
-> **Smart Contract Limitation**: The existing smart contracts ([BiddingPlatform.cdc](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/contracts/BiddingPlatform.cdc), [Tender.cdc](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/contracts/Tender.cdc)) are already deployed on testnet at `0xea0627a8b29d7901` and `0xc9a10bbda7c73177`. Phase 2 will work **within the existing contract interfaces** — no contract redeployment needed. The [placeBid()](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/services/bidService.js#7-15) function in [BiddingPlatform.cdc](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/contracts/BiddingPlatform.cdc) expects `bidTokens` as a `UFix64` value parameter (not actual vault tokens), and `settleBidding()` expects a `cutVault` capability. We'll create transactions that match these exact interfaces.
+> **Smart Contract Limitation**: The existing smart contracts ([BiddingPlatform.cdc](file:///f:/Collage/Sem4/PBL/project1/TenderBlock/client/src/contracts/BiddingPlatform.cdc), [Tender.cdc](file:///f:/Collage/Sem4/PBL/project1/TenderBlock/client/src/contracts/Tender.cdc)) are already deployed on testnet at `0xea0627a8b29d7901` and `0xc9a10bbda7c73177`. Phase 2 will work **within the existing contract interfaces** — no contract redeployment needed. The [placeBid()](file:///f:/Collage/Sem4/PBL/project1/TenderBlock/client/src/services/bidService.js#7-15) function in [BiddingPlatform.cdc](file:///f:/Collage/Sem4/PBL/project1/TenderBlock/client/src/contracts/BiddingPlatform.cdc) expects `bidTokens` as a `UFix64` value parameter (not actual vault tokens), and `settleBidding()` expects a `cutVault` capability. We'll create transactions that match these exact interfaces.
 
 > [!WARNING]
 > **Testing on Flow Testnet**: After implementation, you'll need a running Flow testnet account with the contracts deployed to do a full end-to-end test. If the contracts at `0xea0627a8b29d7901` and `0xc9a10bbda7c73177` are no longer active, they'd need to be redeployed. Please confirm these accounts are still active.
@@ -177,13 +177,13 @@ Add deprecation banner: "We recommend using wallet-based signup for full blockch
 
 1. **Backend module loading test:**
 ```bash
-cd f:\Collage\Sem4\PBL\project1\TenderFloww\backend
+cd f:\Collage\Sem4\PBL\project1\TenderBlock\backend
 node -e "try { require('./server.js'); console.log('Backend OK'); } catch(e) { console.error('FAIL:', e.message); process.exit(1); }"
 ```
 
 2. **Frontend build test:**
 ```bash
-cd f:\Collage\Sem4\PBL\project1\TenderFloww\client
+cd f:\Collage\Sem4\PBL\project1\TenderBlock\client
 npx vite build 2>&1
 ```
 This confirms all imports resolve and JSX compiles.

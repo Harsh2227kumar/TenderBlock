@@ -1,6 +1,6 @@
 # 📌 QUICK REFERENCE — Daily Cheat Sheet
 
-## TenderFloww v2.0 — Decentralized Tendering System
+## TenderBlock v2.0 — Decentralized Tendering System
 
 > **Keep this open while coding!**
 

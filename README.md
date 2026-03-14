@@ -8,7 +8,7 @@
 </div>
 <div align="center">
  
-  <a align="center" href="https://www.postman.com/winter-moon-325889/workspace/tenderflow-team-bugbyte/overview">Postman public workspace for APIs</a> </br>
+  <a align="center" href="#">Postman public workspace for APIs</a> </br>
   <a align="center" href="https://youtu.be/tMH9hlLgedE">Video Walkthrough of Cadence Smart Contracts</a>
   
 </div>
@@ -19,9 +19,9 @@
   <br />
   <a href="#">Blog</a>
   ·
-  <a href="https://github.com/bishakhne0gi/TenderFloww/issues">Report Issues</a>
+  <a href="https://github.com/Harsh2227kumar/TenderBlock/issues">Report Issues</a>
   ·
-  <a href="https://github.com/bishakhne0gi/TenderFloww/issues">Request Feature</a>
+  <a href="https://github.com/Harsh2227kumar/TenderBlock/issues">Request Feature</a>
 </p>
 
 <details>
@@ -44,14 +44,13 @@
     <li><a href="#roadmap">Roadmap</a></li>
     <li><a href="#contributing">Contributing</a></li>
     <li><a href="#license">License</a></li>
-    <li><a href="#contact">Contact</a></li>
-    <li><a href="#acknowledgments">Acknowledgments</a></li>
+    <li><a href="#license">License</a></li>
   </ol>
 </details>
 
 ## 🤩🤩 About The Project 🤩🤩
 
-https://github.com/bishakhne0gi/TenderFloww/assets/63441472/1c7e6ef7-1d47-4548-8737-1d9139280971
+TenderBlock is a decentralized auction platform for transparent tendering workflows.
 
 ### 💭 Inspiration
 
@@ -155,7 +154,7 @@ Blockchain (one of the ways to implement decentralization) steps into the pictur
 <br/>
 
 <div style="display: flex; flex-direction: row; align-items: center; gap: 1rem">
-<img src="https://github.com/bishakhne0gi/TenderFloww/assets/63441472/187c1593-c2ae-4dea-8038-54442bd2e45e" height="40px" width="40px"> Postman for documenting our APIs
+<img src="https://www.postman.com/_ar-assets/images/pages/lp-v2/postman-logo-horizontal-orange.svg" height="40px" width="80px"> Postman for documenting our APIs
 </div>
 
 <br/>
@@ -183,7 +182,7 @@ Follow the steps below to set up the project:
 1. Clone the repo
 
    ```sh
-   git clone https://github.com/bishakhne0gi/TenderFloww.git
+  git clone https://github.com/Harsh2227kumar/TenderBlock.git
    ```
 
 2. Configure Client
@@ -252,7 +251,7 @@ Follow the steps below to set up the project:
 - [x] Integrating both smart contract and backend
 - [x] Integrate Filecoin
 
-See the [open issues](https://github.com/arnab2001/Ledged/issues) for a full list of proposed features and known issues.
+See the [open issues](https://github.com/Harsh2227kumar/TenderBlock/issues) for a full list of proposed features and known issues.
 
 ## Contributing
 
@@ -270,13 +269,6 @@ To contribute:
 
 Distributed under the MIT License.
 
-## Contributors
+## Team
 
-<h1 align="center">
- <b>Made with ❤️ by team Bugbyte</h1>
-</h1>
-<div align="center">
-<a href="https://github.com/bishakhne0gi/TenderFloww/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=Irshit033/Hype-The-Hike" />
-</a>
-</div>
+Built and maintained as TenderBlock.

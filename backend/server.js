@@ -66,7 +66,7 @@ app.get("/", (request, response) => {
   response.status(200).json({
     success: true,
     data: {
-      name: "TenderFloww API",
+      name: "TenderBlock API",
       version: "2.0.0",
       type: "nodejs-server",
       status: "running",
@@ -113,7 +113,7 @@ const port = process.env.PORT || "5000";
 app.listen(port, () => {
   console.log(`
 ╔══════════════════════════════════════════════════╗
-║         TenderFloww API Server v2.0              ║
+║         TenderBlock API Server v2.0              ║
 ╠══════════════════════════════════════════════════╣
 ║  Status:      Running                            ║
 ║  URL:         http://localhost:${port}               ║

@@ -10,7 +10,7 @@ const pool = mysql.createPool({
     port: process.env.MYSQL_PORT || 3306,
     user: process.env.MYSQL_USER || "root",
     password: process.env.MYSQL_PASSWORD || "root",
-    database: process.env.MYSQL_DATABASE || "tenderflowdb",
+    database: process.env.MYSQL_DATABASE || "tenderblockdb",
     waitForConnections: true,
     connectionLimit: parseInt(process.env.MYSQL_CONNECTION_LIMIT) || 20,
     queueLimit: 0,

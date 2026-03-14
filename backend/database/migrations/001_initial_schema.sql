@@ -1,6 +1,6 @@
--- TenderFloww Database Schema
+-- TenderBlock Database Schema
 -- Run this ONCE to set up all tables
--- Usage: mysql -u root -p tenderflowdb < 001_initial_schema.sql
+-- Usage: mysql -u root -p tenderblockdb < 001_initial_schema.sql
 
 -- Bidders table
 CREATE TABLE IF NOT EXISTS bidders (

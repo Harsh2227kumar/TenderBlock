@@ -1,6 +1,6 @@
 # 📋 CRD — Comprehensive Requirements Document
 
-## TenderFloww v2.0 — Decentralized Tendering System
+## TenderBlock v2.0 — Decentralized Tendering System
 
 > **Document Version**: 2.0  
 > **Last Updated**: 2026-03-02  

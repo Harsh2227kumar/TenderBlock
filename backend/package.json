@@ -1,7 +1,7 @@
 {
-  "name": "tenderflow_backend",
+  "name": "tenderblock_backend",
   "version": "1.0.0",
-  "description": "TenderFlow Backend - NodeJs - Hack4Bengal 2.0 - 2023",
+  "description": "TenderBlock Backend - NodeJs",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

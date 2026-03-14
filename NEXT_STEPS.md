@@ -1,6 +1,6 @@
 # ✅ NEXT STEPS — Implementation Roadmap
 
-## TenderFloww v2.0 — Decentralized Tendering System
+## TenderBlock v2.0 — Decentralized Tendering System
 
 > **Last Updated**: 2026-03-02  
 > **Total Estimated Time**: 6–8 weeks (part-time development)

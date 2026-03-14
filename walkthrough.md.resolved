@@ -22,19 +22,19 @@ User Action → FCL → Flow Blockchain → Sealed → Express API → MySQL Ind
 
 | File | Purpose |
 |------|---------|
-| [placeBid.js](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/Transactions/placeBid.js) | On-chain bid placement via `BiddingCollection.placeBid()` |
-| [settleBidding.js](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/Transactions/settleBidding.js) | On-chain settlement — NFT transfer + token settlement |
-| [flowService.js](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/services/flowService.js) | Centralized blockchain service layer |
+| [placeBid.js](file:///f:/Collage/Sem4/PBL/project1/TenderBlock/client/src/Transactions/placeBid.js) | On-chain bid placement via `BiddingCollection.placeBid()` |
+| [settleBidding.js](file:///f:/Collage/Sem4/PBL/project1/TenderBlock/client/src/Transactions/settleBidding.js) | On-chain settlement — NFT transfer + token settlement |
+| [flowService.js](file:///f:/Collage/Sem4/PBL/project1/TenderBlock/client/src/services/flowService.js) | Centralized blockchain service layer |
 
 ### Files Modified
 
 | File | Change |
 |------|--------|
-| [getProjectStatuses.js](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/Scripts/getProjectStatuses.js) | Fixed address (`0x01` → `0xea0627a8b29d7901`), top-level await, missing args |
-| [FlowProvider.jsx](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/context/FlowProvider.jsx) | Added `txInProgress`, `txError`, [clearTx](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/context/FlowProvider.jsx#43-50); fixed undefined `txId` crash |
-| [Modal.jsx](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/components/modal/Modal.jsx) | Blockchain-first tender creation with multi-step progress UI |
-| [Bids.jsx](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/containers/bids/Bids.jsx) | Blockchain-first bid placement, on-chain status display, explorer links |
-| [Tender.jsx](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/components/tender/Tender.jsx) | Blockchain-first settlement with NFT transfer, explorer links |
+| [getProjectStatuses.js](file:///f:/Collage/Sem4/PBL/project1/TenderBlock/client/src/Scripts/getProjectStatuses.js) | Fixed address (`0x01` → `0xea0627a8b29d7901`), top-level await, missing args |
+| [FlowProvider.jsx](file:///f:/Collage/Sem4/PBL/project1/TenderBlock/client/src/context/FlowProvider.jsx) | Added `txInProgress`, `txError`, [clearTx](file:///f:/Collage/Sem4/PBL/project1/TenderBlock/client/src/context/FlowProvider.jsx#43-50); fixed undefined `txId` crash |
+| [Modal.jsx](file:///f:/Collage/Sem4/PBL/project1/TenderBlock/client/src/components/modal/Modal.jsx) | Blockchain-first tender creation with multi-step progress UI |
+| [Bids.jsx](file:///f:/Collage/Sem4/PBL/project1/TenderBlock/client/src/containers/bids/Bids.jsx) | Blockchain-first bid placement, on-chain status display, explorer links |
+| [Tender.jsx](file:///f:/Collage/Sem4/PBL/project1/TenderBlock/client/src/components/tender/Tender.jsx) | Blockchain-first settlement with NFT transfer, explorer links |
 
 ### Data Flow (After Phase 2)
 
@@ -64,17 +64,17 @@ sequenceDiagram
 
 | File | Purpose |
 |------|---------|
-| [AuthProvider.jsx](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/context/AuthProvider.jsx) | Wallet-aware auth context with admin detection |
+| [AuthProvider.jsx](file:///f:/Collage/Sem4/PBL/project1/TenderBlock/client/src/context/AuthProvider.jsx) | Wallet-aware auth context with admin detection |
 
 ### Files Modified
 
 | File | Change |
 |------|--------|
-| [main.jsx](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/main.jsx) | Wrapped app with [AuthProvider](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/context/AuthProvider.jsx#10-82) |
-| [Login.jsx](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/containers/login/Login.jsx) | Wallet login as primary, email/password deprecated |
-| [Signup.jsx](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/containers/signup/Signup.jsx) | Wallet signup as primary, form deprecated |
-| [Admin.jsx](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/containers/admin/Admin.jsx) | Wallet status, admin badge, disconnect button |
-| [Projects.jsx](file:///f:/Collage/Sem4/PBL/project1/TenderFloww/client/src/containers/projects/Projects.jsx) | Wallet connect/disconnect in header |
+| [main.jsx](file:///f:/Collage/Sem4/PBL/project1/TenderBlock/client/src/main.jsx) | Wrapped app with [AuthProvider](file:///f:/Collage/Sem4/PBL/project1/TenderBlock/client/src/context/AuthProvider.jsx#10-82) |
+| [Login.jsx](file:///f:/Collage/Sem4/PBL/project1/TenderBlock/client/src/containers/login/Login.jsx) | Wallet login as primary, email/password deprecated |
+| [Signup.jsx](file:///f:/Collage/Sem4/PBL/project1/TenderBlock/client/src/containers/signup/Signup.jsx) | Wallet signup as primary, form deprecated |
+| [Admin.jsx](file:///f:/Collage/Sem4/PBL/project1/TenderBlock/client/src/containers/admin/Admin.jsx) | Wallet status, admin badge, disconnect button |
+| [Projects.jsx](file:///f:/Collage/Sem4/PBL/project1/TenderBlock/client/src/containers/projects/Projects.jsx) | Wallet connect/disconnect in header |
 
 ---
 

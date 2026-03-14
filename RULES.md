@@ -1,6 +1,6 @@
 # 📏 RULES — Code Standards & Conventions
 
-## TenderFloww v2.0 — Decentralized Tendering System
+## TenderBlock v2.0 — Decentralized Tendering System
 
 > **Document Version**: 2.0  
 > **Last Updated**: 2026-03-02  
@@ -707,7 +707,7 @@ MYSQL_HOST=localhost
 MYSQL_PORT=3306
 MYSQL_USER=your_user
 MYSQL_PASSWORD=your_secure_password
-MYSQL_DATABASE=tenderflowdb
+MYSQL_DATABASE=tenderblockdb
 MYSQL_CONNECTION_LIMIT=20
 
 # JWT (if kept temporarily during migration)

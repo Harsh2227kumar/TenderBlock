@@ -1,6 +1,6 @@
 # 🚀 GETTING STARTED — Setup & Run Guide
 
-## TenderFloww v2.0 — Decentralized Tendering System
+## TenderBlock v2.0 — Decentralized Tendering System
 
 > **Last Updated**: 2026-03-02  
 > **OS Support**: Windows, macOS, Linux
@@ -35,8 +35,8 @@ docker --version      # Optional: Should output Docker version
 ## 2. Clone the Repository
 
 ```bash
-git clone https://github.com/bishakhne0gi/TenderFloww.git
-cd TenderFloww
+git clone https://github.com/Harsh2227kumar/TenderBlock.git
+cd TenderBlock
 ```
 
 ---
@@ -65,9 +65,9 @@ cd TenderFloww
    ```
 
    ```sql
-   CREATE DATABASE tenderflowdb;
-   CREATE USER 'tenderflow_user'@'localhost' IDENTIFIED BY 'your_secure_password';
-   GRANT ALL PRIVILEGES ON tenderflowdb.* TO 'tenderflow_user'@'localhost';
+  CREATE DATABASE tenderblockdb;
+  CREATE USER 'tenderblock_user'@'localhost' IDENTIFIED BY 'your_secure_password';
+  GRANT ALL PRIVILEGES ON tenderblockdb.* TO 'tenderblock_user'@'localhost';
    FLUSH PRIVILEGES;
    EXIT;
    ```
@@ -122,9 +122,9 @@ npm install
    # MySQL Database
    MYSQL_HOST=localhost
    MYSQL_PORT=3306
-   MYSQL_USER=tenderflow_user
+  MYSQL_USER=tenderblock_user
    MYSQL_PASSWORD=your_secure_password
-   MYSQL_DATABASE=tenderflowdb
+  MYSQL_DATABASE=tenderblockdb
    MYSQL_CONNECTION_LIMIT=20
 
    # JWT Secret (generate a strong random string)
@@ -189,7 +189,7 @@ curl http://localhost:5000/
 Expected response:
 ```json
 {
-  "name": "tenderflow",
+  "name": "tenderblock",
   "type": "nodejs-server",
   "status": "running"
 }
@@ -500,7 +500,7 @@ export default defineConfig({
 ## 12. Project Structure Quick Overview
 
 ```
-TenderFloww/
+TenderBlock/
 ├── backend/
 │   ├── server.js              # Express server entry point
 │   ├── routes/
