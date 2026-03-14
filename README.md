@@ -1,274 +1,274 @@
+# TenderBlock
+
+A decentralized tendering platform built with React, Node.js, MySQL, and Flow blockchain.
+
+TenderBlock combines on-chain tender operations (creation, bidding, settlement) with an off-chain indexer backend for fast reads, search, and dashboard views.
+
+---
+
+## What This Project Actually Builds
+
+TenderBlock currently includes:
+
+- Wallet-aware frontend with Flow FCL integration
+- Blockchain-first tender lifecycle (create, bid, settle)
+- Backend API for authentication, tender indexing, and bidder data
+- MySQL-backed read model for filtering/searching tenders
+- Legacy email/password auth flow (still present, marked as legacy in UI)
+- IPFS upload support for tender metadata/documents (Web3.Storage client)
+
+---
+
+## Core Features
+
+### 1) Tender Creation (Admin)
+- Admin creates tender from the admin panel
+- App first submits transaction on Flow chain
+- After successful chain transaction, data is indexed in MySQL
+- Transaction hash is stored and explorer link is shown in UI
+
+### 2) Bidding Flow (Bidder)
+- Bidder connects wallet and places bid
+- Bid is submitted on-chain first
+- Backend index call is attempted afterward for read-model sync
+- Lowest bid and leading bidder are reflected in tender state
+
+### 3) Settlement Flow
+- Settlement is blockchain-first
+- UI supports settlement progress states (blockchain/indexing/done)
+- Winner experience points are updated in backend during settlement indexing
+
+### 4) Auth + Profile
+- Legacy auth: signup/login/logout with JWT in HTTP-only cookie
+- Profile APIs available (`/user`, `/data`)
+- Profile image upload endpoint with validation
+- Wallet auth support via Flow FCL context
+
+### 5) Tender Discovery
+- Public tender listing endpoint with:
+  - pagination
+  - status filters (`active`, `settled`)
+  - text search
+- Tender detail and bid history endpoints
+
+---
+
+## Tech Stack
+
+### Frontend
+- React 18 + Vite
+- React Router
+- SWR
+- Axios
+- Flow FCL (`@onflow/fcl`)
+
+### Backend
+- Node.js + Express
+- MySQL (`mysql2`)
+- JWT + cookie auth
+- Multer (file upload)
+- Helmet + CORS + rate limiting
+
+### Web3 / Storage
+- Flow Testnet (transaction + query flows)
+- Web3.Storage client for IPFS
+
+---
+
+## Architecture (Current)
+
+1. Frontend triggers action (create/bid/settle)
+2. Blockchain transaction executes first (Flow)
+3. Backend API indexes/updates MySQL for query performance
+4. UI reads mostly from MySQL + optionally queries chain status
+
+This gives transparency from blockchain while keeping app UX fast.
+
+---
+
+## Project Structure
+
+```text
+TenderBlock/
+├── backend/
+│   ├── server.js
+│   ├── routes/
+│   │   ├── bidders.js
+│   │   └── tender.js
+│   ├── middleware/
+│   ├── database/
+│   │   ├── pool.js
+│   │   └── migrations/
+│   └── uploads/
+├── client/
+│   ├── src/
+│   │   ├── containers/
+│   │   ├── components/
+│   │   ├── services/
+│   │   ├── context/
+│   │   ├── Transactions/
+│   │   ├── Scripts/
+│   │   └── flow/
+│   └── package.json
+└── README.md
+```
+
+---
+
+## API Overview
+
+### Auth / Bidder
+- `POST /signup`
+- `POST /login`
+- `POST /logout`
+- `GET /user`
+- `GET /data`
+- `POST /upload/image`
 
+### Tender
+- `GET /tender/id`
+- `POST /tender/create`
+- `GET /tender/display`
+- `GET /tender/display/:id`
+- `POST /placebid`
+- `GET /tender/:id/bids`
+- `POST /settle`
 
-## Decentralized auction for getting tenders
-
-📹 <b><a align="center" href="https://www.youtube.com/watch?v=iBkmwWALsMI">Watch Demo Video</a></b><br/>
-📺
-
-</div>
-<div align="center">
- 
-  <a align="center" href="#">Postman public workspace for APIs</a> </br>
-  <a align="center" href="https://youtu.be/tMH9hlLgedE">Video Walkthrough of Cadence Smart Contracts</a>
-  
-</div>
-<p align="center">
-  Use this readme to get started with this project
-  <br />
-  <br />
-  <br />
-  <a href="#">Blog</a>
-  ·
-  <a href="https://github.com/Harsh2227kumar/TenderBlock/issues">Report Issues</a>
-  ·
-  <a href="https://github.com/Harsh2227kumar/TenderBlock/issues">Request Feature</a>
-</p>
-
-<details>
-  <summary>Table of Contents</summary>
-  <ol>
-    <li>
-      <a href="#about-the-project">About The Project</a>
-      <ul>
-        <li><a href="#built-with">Built With</a></li>
-      </ul>
-    </li>
-    <li>
-      <a href="#getting-started">Getting Started</a>
-      <ul>
-        <li><a href="#prerequisites">Prerequisites</a></li>
-        <li><a href="#installation">Installation</a></li>
-      </ul>
-    </li>
-    <li><a href="#usage">Usage</a></li>
-    <li><a href="#roadmap">Roadmap</a></li>
-    <li><a href="#contributing">Contributing</a></li>
-    <li><a href="#license">License</a></li>
-    <li><a href="#license">License</a></li>
-  </ol>
-</details>
+### Health
+- `GET /`
+- `GET /health`
 
-## 🤩🤩 About The Project 🤩🤩
+---
 
-TenderBlock is a decentralized auction platform for transparent tendering workflows.
+## Setup & Run
 
-### 💭 Inspiration
+## 1) Clone
 
-- **Tamper-Resistant Data:** In centralized systems, the data is vulnerable to easy tampering and modification since there is a single entity or central authority controlling it. This poses a significant risk to the integrity of the data. By adopting a decentralized approach, we can leverage blockchain technology to ensure that data remains tamper-resistant and immutable.
-- **Transparency in Tendering:** The current process of calling for tenders is often lengthy, manual, and lacks transparency, leaving ample room for corruption. By developing a bidding platform, we aim to bring transparency to the forefront of the tendering process. Through digitalization and automation, we can streamline the process, promote fairness, and minimize opportunities for corruption.
+```bash
+git clone https://github.com/Harsh2227kumar/TenderBlock.git
+cd TenderBlock
+```
 
-### ⚙️ Use Case: Infrastructure Development
+## 2) Backend Setup
 
-Infrastructure development projects, such as road construction, public transportation systems, or utility network expansion, often involve substantial budgets and require transparent tendering processes. However, the current centralized systems lack transparency and can be prone to corruption. By building a bidding platform for government tenders, we aim to bring transparency and accountability to infrastructure development projects. The platform will enable fair competition among contractors, ensure equal access to tender information, and provide an audit trail of the entire bidding process, minimizing the risk of corruption and favoritism.
+```bash
+cd backend
+npm install
+```
 
-Blockchain (one of the ways to implement decentralization) steps into the picture to solve our problems.
+Create `backend/.env` (example values):
 
-### 💡 What problem does the project solve?
+```env
+PORT=5000
+NODE_ENV=development
+CLIENT_ORIGIN=http://localhost:5173
 
-- The project addresses the challenge of inefficient and biased tender processes, particularly in the public and government sectors.
-- The DAPP (Decentralized Application) powered by FLOW blockchain provides a transparent and efficient auction system for tendering.
-- By utilizing the power of blockchain technology and NFTs (Non-Fungible Tokens), the project ensures a fair and unbiased distribution of tenders not only based on offering but also experience and qualifications.
-- The use of NFTs as a means of generating and storing agreements guarantees immutability and prevents any manipulation or favoritism.
-- With the implementation of this system, corruption and favoritism are eliminated, creating a level playing field for all participants in the tendering process.
-- By promoting transparency and accountability, the project fosters trust and transparency among stakeholders and ensures that tenders are awarded based on merit and expertise rather than biased decision-making.
+MYSQL_HOST=localhost
+MYSQL_PORT=3306
+MYSQL_USER=your_mysql_user
+MYSQL_PASSWORD=your_mysql_password
+MYSQL_DATABASE=tenderblockdb
+MYSQL_CONNECTION_LIMIT=20
 
-### 🙌 Overview
+JWT_SECRET=REPLACE_WITH_64_CHAR_RANDOM_STRING
 
-- On the landing page, See the listing of tenders posted by the government.
-- After clicking a specific **tender** participants can participate in an auction bid using the **bidding portal**.
-- After clicking the **Register** button, the user can log in using the **Blockto** wallet.
-- then they can bid on a tender using a flow
-- Upon the end of the Auction the bidding will be settled and the lowest bidder will be awarded an NFT that signifies the ownership of the tender
-- On the New Ledger page, users can create their **custom fields and data** and upload **files**.
-- On the admin panel government can create new bids and assign its metadata, which will be listed on the site
-- Admin can select the duration of the bid and upon end of Auction, the tender will be automatically awarded to the winner
+FLOW_ACCESS_NODE=https://rest-testnet.onflow.org
+FLOW_ACCOUNT_ADDRESS=0xYourFlowAddress
+FLOW_PRIVATE_KEY=your_flow_private_key
+FLOW_NETWORK=testnet
 
+WEB3_STORAGE_TOKEN=your_web3_storage_token
 
-### 💀 Challenges we ran into
+RATE_LIMIT_WINDOW_MS=60000
+RATE_LIMIT_MAX_REQUESTS=100
+```
 
-- Since blockchain is a fairly new technology, we faced difficulties in finding solutions for bugs due to a smaller community.
-- Cadence was pretty hard for us to learn and implement on that large scale, Resources was scarce too
-- Flow Testnet was crashing sometimes
-- Insufficient quota in our cloud account prevented us from creating a VPC network in GCP, causing problem in establishing a seamless connection between the Cloud SQL and VM instance.
-- Faced timeout errors with the Google Cloud Auth proxy, impacting the authentication process and causing disruptions in the project workflow.
-- Faces issue during private IP exposure and adjusting firewall settings were necessary steps to establish a successful connection between the two cloud services.
+Run backend:
 
-### 🔮 What's Next For Our Project
+```bash
+npm run dev
+```
 
-- Restructuring the view vid and auction section for better readability and organization.
-- Optimization and minor bug fixes.
+## 3) Frontend Setup
 
-## 💻 Built With
+```bash
+cd ../client
+npm install
+```
 
-<div style="display: flex; flex-direction: row; align-items: center; gap: 1rem">
-<img src="https://user-images.githubusercontent.com/25181517/183897015-94a058a6-b86e-4e42-a37f-bf92061753e5.png" height="30px" width="30px"> React - JavaScript library for building UI
-</div>
+Optional frontend env (`client/.env`):
 
-<br/>
+```env
+VITE_API_URL=http://localhost:5000
+VITE_FLOW_ACCESS_NODE=https://rest-testnet.onflow.org
+VITE_FLOW_DISCOVERY_WALLET=https://fcl-discovery.onflow.org/testnet/authn
+```
 
-<div style="display: flex; flex-direction: row; align-items: center; gap: 1rem">
-<img src="https://user-images.githubusercontent.com/63441472/190888196-9164551f-eb48-4da6-ab91-db17adad7c73.svg" height="30px" width="30px"> Vite - Frontend Build tool
-</div>
+Run frontend:
 
-<br/>
+```bash
+npm run dev
+```
 
-<div style="display: flex; flex-direction: row; align-items: center; gap: 1rem">
-<img src="https://cryptologos.cc/logos/flow-flow-logo.png?v=025" height="40px" width="40px"> Flow - Main decentralized, public layer blockchain
-</div>
+Frontend: `http://localhost:5173`  
+Backend: `http://localhost:5000`
 
-<br/>
+---
 
-<div style="display: flex; flex-direction: row; align-items: center; gap: 1rem">
-<img src="https://cryptologos.cc/logos/flow-flow-logo.png?v=025" height="40px" width="40px"> Cadence - Smart contract programming language
-</div>
+## Current Product Notes (Important)
 
-<br/>
+- Wallet flow is the primary recommended path in UI.
+- Legacy email/password flow is still available and marked as legacy.
+- Some blockchain mapping is currently simplified:
+  - `biddingId` is currently hardcoded in bid/settle flow (`"1"`) and should be mapped to actual tender IDs via indexer logic.
 
-<div style="display: flex; flex-direction: row; align-items: center; gap: 1rem">
-<img src="https://user-images.githubusercontent.com/63441472/221377772-d474f54c-6049-467c-b830-7c8a220bce5d.png" height="40px" width="40px"> Filecoin - Decentralized storage network
-</div>
+---
 
-<br/>
+## Problems Faced During Development (Updated)
 
-<div style="display: flex; flex-direction: row; align-items: center; gap: 1rem">
-<img src="https://www.gend.co/hs-fs/hubfs/gcp-logo-cloud.png?width=730&name=gcp-logo-cloud.png" height="40px"> GCP - Cloud service provider
-</div>
-<br/>
+These are the real issues encountered while building this codebase:
 
-<div style="display: flex; flex-direction: row; align-items: center; gap: 1rem">
-<img src="https://upload.wikimedia.org/wikipedia/commons/d/d9/Node.js_logo.svg" height="40px" width="60px"> Node.js - as the backend runtime
-</div>
+1. **On-chain vs off-chain consistency**  
+   Keeping blockchain-first operations and MySQL indexes in sync required explicit fallback handling (chain success + DB index failure cases).
 
-<br/>
+2. **Wallet UX + transaction lifecycle**  
+   Handling pending/sealed/failure transaction states clearly in UI took multiple iterations (especially across create/bid/settle screens).
 
-<div style="display: flex; flex-direction: row; align-items: center; gap: 1rem">
-<img src="https://www.vectorlogo.zone/logos/expressjs/expressjs-icon.svg" height="40px" width="50px"> Express.js - as our backend framework
-</div>
+3. **Flow integration complexity**  
+   Type formatting (`UInt64`, `UFix64`) and FCL transaction wiring caused frequent runtime issues during early implementation.
 
-<br/>
+4. **Auth migration challenge**  
+   Supporting both wallet-based auth and legacy JWT auth in the same product created edge cases around role checks and route behavior.
 
-<div style="display: flex; flex-direction: row; align-items: center; gap: 1rem">
-<img src="https://www.docker.com/wp-content/uploads/2022/03/vertical-logo-monochromatic.png" height="50px" width="50px"> Docker - for containerization
-</div>
+5. **Bid-to-auction mapping gap**  
+   Mapping app tender IDs to on-chain auction IDs cleanly is still an active improvement area.
 
-<br/>
+6. **Environment + dependency mismatch**  
+   Keeping backend, frontend, Flow config, and storage tokens aligned across local setups was error-prone without clear env templates.
 
-<div style="display: flex; flex-direction: row; align-items: center; gap: 1rem">
-<img src="https://www.postman.com/_ar-assets/images/pages/lp-v2/postman-logo-horizontal-orange.svg" height="40px" width="80px"> Postman for documenting our APIs
-</div>
+---
 
-<br/>
+## Roadmap (Near-Term)
 
-<div style="display: flex; flex-direction: row; align-items: center; gap: 1rem">
-<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/.xyz_logo.svg/1280px-.xyz_logo.svg.png" height="40px" width="60px"> .XYZ for our domain registry
-</div>
+- Replace hardcoded on-chain `biddingId` with deterministic mapping/indexing
+- Add dedicated admin authorization middleware for sensitive routes
+- Improve automated sync/retry when DB indexing fails after chain success
+- Add test coverage for blockchain + backend integration scenarios
+- Improve API docs with concrete request/response examples
 
-## Getting Started
-
-To set up your project locally, follow these simple steps.
-
-### Prerequisites
-
-You must have NPM (Node Package Manager), Flow CLI, and Docker installed in your system. If you don't, we've got you covered.
-
-- [Install NPM](https://phoenixnap.com/kb/install-node-js-npm-on-windows)
-- [Install Flow CLI](https://developers.flow.com/tooling/flow-cli/install)
-- [Install Docker](https://docs.docker.com/engine/install/)
-
-### Installation
-
-Follow the steps below to set up the project:
-
-1. Clone the repo
-
-   ```sh
-  git clone https://github.com/Harsh2227kumar/TenderBlock.git
-   ```
-
-2. Configure Client
-
-   ```sh
-   cd client
-   npm install
-   ```
-
-3. Install all the NPM packages
-
-   ```sh
-   npm install
-   ```
-
-4. Configure `.env` file with the required settings
-
-   ```env
-   Coming Soon
-   ```
-
-5. Initialize Flow: Navigate to the client folder
-
-   ```sh
-   Flow init
-   ```
-
-6. Install and Configure Flow CLI, create and add an account so that we can deploy contracts on the testnet
-
-   ```sh
-   flow accounts create \
-    --key <your Public key from flow Cli>\
-    --host access.devnet.nodes.onflow.org:9000 \
-    --signer my-testnet-account
-   ```
-
-   For more information, refer to the [testnet deployment guide](https://developers.flow.com/tutorials/testnet-deployment).
-
-7. Deploy the project on your testnet using the following command
-
-   ```sh
-   flow project deploy
-   ```
-
-8. Run the project
-
-   ```sh
-   npm start dev
-   ```
-
-<!-- USAGE EXAMPLES
-## Usage
-<div align="center">
-<img src="https://media2.giphy.com/media/UYpelo7WbjZQg0dDQY/200.gif" width="500" height="200" />
-</div>
-<p align="right">(<a href="#readme-top">back to top</a>)</p> -->
-
-## Roadmap
-
-- [x] Landing page
-- [x] Login/SignUp component
-- [x] Place bids
-- [x] Admin panel
-- [x] Adding smart contract
-- [x] Building backend
-- [x] Integrating both smart contract and backend
-- [x] Integrate Filecoin
-
-See the [open issues](https://github.com/Harsh2227kumar/TenderBlock/issues) for a full list of proposed features and known issues.
+---
 
 ## Contributing
 
-If you have a suggestion that would make this project better, please fork the repo and create a pull request. You can also simply open an issue with the tag "improvement". Don't forget to star this project!
+If you want to contribute:
 
-To contribute:
+1. Fork the repo
+2. Create a branch (`feature/your-feature`)
+3. Commit clean changes
+4. Open a pull request
 
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/Feature1`)
-3. Commit your Changes (`git commit -m 'Add Feature 1'`)
-4. Push to the Branch (`git push origin feature/Feature1`)
-5. Open a Pull Request
+---
 
 ## License
 
-Distributed under the MIT License.
-
-## Team
-
-Built and maintained as TenderBlock.
+MIT License
