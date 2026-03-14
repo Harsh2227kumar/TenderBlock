@@ -55,23 +55,62 @@ TenderBlock currently includes:
 
 ## Tech Stack
 
+<div align="center">
+
 ### Frontend
-- React 18 + Vite
-- React Router
-- SWR
-- Axios
-- Flow FCL (`@onflow/fcl`)
+
+<img src="https://cdn.simpleicons.org/react/61DAFB" alt="React" height="38" />
+<img src="https://cdn.simpleicons.org/vite/646CFF" alt="Vite" height="38" />
+<img src="https://cdn.simpleicons.org/reactrouter/CA4245" alt="React Router" height="38" />
+<img src="https://cdn.simpleicons.org/swr/000000" alt="SWR" height="38" />
+<img src="https://cdn.simpleicons.org/axios/5A29E4" alt="Axios" height="38" />
+
+<br />
+<br />
+
+![React](https://img.shields.io/badge/React-18-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![Vite](https://img.shields.io/badge/Vite-7-1B1B1F?style=for-the-badge&logo=vite&logoColor=646CFF)
+![React Router](https://img.shields.io/badge/React_Router-6-1B1B1F?style=for-the-badge&logo=reactrouter&logoColor=CA4245)
+![SWR](https://img.shields.io/badge/SWR-Data_Fetching-111111?style=for-the-badge)
+![Axios](https://img.shields.io/badge/Axios-HTTP_Client-1B1B1F?style=for-the-badge&logo=axios&logoColor=5A29E4)
+
+---
 
 ### Backend
-- Node.js + Express
-- MySQL (`mysql2`)
-- JWT + cookie auth
-- Multer (file upload)
-- Helmet + CORS + rate limiting
 
-### Web3 / Storage
-- Flow Testnet (transaction + query flows)
-- Web3.Storage client for IPFS
+<img src="https://cdn.simpleicons.org/nodedotjs/5FA04E" alt="Node.js" height="38" />
+<img src="https://cdn.simpleicons.org/express/000000" alt="Express" height="38" />
+<img src="https://cdn.simpleicons.org/mysql/4479A1" alt="MySQL" height="38" />
+<img src="https://cdn.simpleicons.org/jsonwebtokens/000000" alt="JWT" height="38" />
+
+<br />
+<br />
+
+![Node.js](https://img.shields.io/badge/Node.js-Runtime-1B1B1F?style=for-the-badge&logo=nodedotjs&logoColor=5FA04E)
+![Express](https://img.shields.io/badge/Express-API-1B1B1F?style=for-the-badge&logo=express&logoColor=white)
+![MySQL](https://img.shields.io/badge/MySQL-mysql2-1B1B1F?style=for-the-badge&logo=mysql&logoColor=4479A1)
+![JWT](https://img.shields.io/badge/JWT-Cookie_Auth-1B1B1F?style=for-the-badge&logo=jsonwebtokens&logoColor=white)
+![Multer](https://img.shields.io/badge/Multer-File_Upload-1B1B1F?style=for-the-badge)
+![Helmet](https://img.shields.io/badge/Helmet-Security-1B1B1F?style=for-the-badge)
+![CORS](https://img.shields.io/badge/CORS-Enabled-1B1B1F?style=for-the-badge)
+![Rate Limit](https://img.shields.io/badge/Rate_Limit-Protected-1B1B1F?style=for-the-badge)
+
+---
+
+### Web3 + Storage
+
+<img src="https://cdn.simpleicons.org/flow/00EF8B" alt="Flow" height="38" />
+<img src="https://cdn.simpleicons.org/ipfs/65C2CB" alt="IPFS" height="38" />
+
+<br />
+<br />
+
+![Flow](https://img.shields.io/badge/Flow-Testnet-1B1B1F?style=for-the-badge&logo=flow&logoColor=00EF8B)
+![FCL](https://img.shields.io/badge/FCL-Wallet_Integration-1B1B1F?style=for-the-badge)
+![IPFS](https://img.shields.io/badge/IPFS-Document_Storage-1B1B1F?style=for-the-badge&logo=ipfs&logoColor=65C2CB)
+![Web3.Storage](https://img.shields.io/badge/Web3.Storage-Client_Integrated-1B1B1F?style=for-the-badge)
+
+</div>
 
 ---
 
